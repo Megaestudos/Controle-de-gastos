@@ -19,12 +19,12 @@ import {
 
 // Configuração do Firebase (deve ser substituída pelos dados do seu projeto)
 export const firebaseConfig = {
-  apiKey: 'COLOQUE_SUA_API_KEY_AQUI',
-  authDomain: 'COLOQUE_SEU_AUTH_DOMAIN_AQUI',
-  projectId: 'COLOQUE_SEU_PROJECT_ID_AQUI',
-  storageBucket: 'COLOQUE_SEU_STORAGE_BUCKET_AQUI',
-  messagingSenderId: 'COLOQUE_SEU_MESSAGING_SENDER_ID_AQUI',
-  appId: 'COLOQUE_SEU_APP_ID_AQUI',
+  apiKey: 'AIzaSyC79ayeEjnYDwejYovZsdKm8Gdxdle74Zw',
+  authDomain: 'controle-de-gastos-7624f.firebaseapp.com',
+  projectId: 'controle-de-gastos-7624f',
+  storageBucket: 'controle-de-gastos-7624f.firebasestorage.app',
+  messagingSenderId: '1054967907917',
+  appId: '1:1054967907917:web:2775e66d5a8ca7d8d47e04',
 };
 
 // Inicializa Firebase
