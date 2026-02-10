@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Gastos de Viagem</title>
+  <!-- Link para a folha de estilos separada -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Importação do script do Firebase e da lógica do app -->
+  <!-- O código JavaScript principal foi movido para o arquivo app.js para manter a separação de responsabilidades. -->
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header>
+    <h1>App de Gastos de Viagem</h1>
+  </header>
+  <main>
+    <!-- Seção de autenticação (login e cadastro) -->
+    <section id="auth-section">
+      <div class="auth-container">
+        <h2>Criar conta</h2>
+        <form id="signup-form">
+          <div class="form-group">
+            <label for="signup-email">E‑mail:</label>
+            <input type="email" id="signup-email" required />
+          </div>
+          <div class="form-group">
+            <label for="signup-password">Senha:</label>
+            <input type="password" id="signup-password" required />
+          </div>
+          <button type="submit">Cadastrar</button>
+        </form>
+      </div>
+      <div class="auth-container">
+        <h2>Entrar</h2>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-email">E‑mail:</label>
+            <input type="email" id="login-email" required />
+          </div>
+          <div class="form-group">
+            <label for="login-password">Senha:</label>
+            <input type="password" id="login-password" required />
+          </div>
+          <button type="submit">Entrar</button>
+        </form>
+      </div>
+    </section>
+    <!-- Seção de gastos (visível apenas quando usuário está logado) -->
+    <section id="expense-section" style="display: none;">
+      <h2>Registrar gasto</h2>
+      <form id="expense-form">
+        <div class="form-group">
+          <label for="value-input">Valor (R$):</label>
+          <input type="number" id="value-input" min="0" step="0.01" required />
+        </div>
+        <div class="form-group">
+          <label for="reason-input">Motivo:</label>
+          <input type="text" id="reason-input" required />
+        </div>
+        <button type="submit">Adicionar Gasto</button>
+      </form>
+      <div class="results">
+        <h3>Top 3 gastos</h3>
+        <ul id="top-expenses"></ul>
+        <h3 id="total-sum">Total gasto: R$ 0,00</h3>
+      </div>
+    </section>
+    <!-- Seção de logout -->
+    <section id="logout-section" style="display: none;">
+      <button id="logout-btn">Sair</button>
+    </section>
+  </main>
+  <footer>
+    <p>&copy; 2026 Registro de Gastos de Viagem</p>
+  </footer>
+</body>
+</html>
