@@ -1,0 +1,101 @@
+/* Estilos gerais para a página do app de gastos de viagem */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  color: #333;
+  line-height: 1.5;
+}
+
+header {
+  background-color: #1e88e5;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+}
+
+main {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #eee;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+
+/* Estilos para seções de autenticação e gasto */
+.auth-container {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+h2 {
+  margin-top: 0;
+  color: #1e88e5;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="text"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #1e88e5;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #1565c0;
+}
+
+/* Estilização para lista de top gastos */
+.results {
+  margin-top: 2rem;
+}
+
+#top-expenses {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+#top-expenses li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+#total-sum {
+  margin-top: 1rem;
+  font-weight: bold;
+}
