@@ -1,24 +1,7 @@
 // app.js: lógica do aplicativo de gastos de viagem
-// Importa apenas as funções necessárias do Firebase. Utilizar a API modular
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-} from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js';
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  query,
-  where,
-  onSnapshot,
-} from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js';
 
-// Configuração do Firebase (deve ser substituída pelos dados do seu projeto)
-export const firebaseConfig = {
+// Configuração do Firebase (substitua pelos dados do seu projeto)
+const firebaseConfig = {
   apiKey: 'AIzaSyC79ayeEjnYDwejYovZsdKm8Gdxdle74Zw',
   authDomain: 'controle-de-gastos-7624f.firebaseapp.com',
   projectId: 'controle-de-gastos-7624f',
@@ -27,10 +10,10 @@ export const firebaseConfig = {
   appId: '1:1054967907917:web:2775e66d5a8ca7d8d47e04',
 };
 
-// Inicializa Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Inicializa Firebase usando API compatível (namespaced)
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 // Seleciona elementos do DOM
 const signupForm = document.getElementById('signup-form');
@@ -42,19 +25,38 @@ const reasonInput = document.getElementById('reason-input');
 const totalSumEl = document.getElementById('total-sum');
 const topExpensesList = document.getElementById('top-expenses');
 
+// Elementos para alternar entre login e cadastro
+const loginContainer = document.getElementById('login-container');
+const signupContainer = document.getElementById('signup-container');
+const showSignupLink = document.getElementById('show-signup');
+const showLoginLink = document.getElementById('show-login');
+
+// Alternância de formulários: mostra um de cada vez
+if (showSignupLink) {
+  showSignupLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (loginContainer) loginContainer.style.display = 'none';
+    if (signupContainer) signupContainer.style.display = 'block';
+  });
+}
+if (showLoginLink) {
+  showLoginLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (signupContainer) signupContainer.style.display = 'none';
+    if (loginContainer) loginContainer.style.display = 'block';
+  });
+}
+
 let unsubscribeExpenses = null;
 
-// Função para iniciar listeners de despesas (escuta em tempo real) para o usuário logado
+// Função para iniciar listeners de despesas em tempo real para o usuário logado
 function startExpenseListeners(user) {
-  // Cancela listener anterior, se existir
   if (unsubscribeExpenses) {
     unsubscribeExpenses();
     unsubscribeExpenses = null;
   }
-  // Cria uma consulta filtrando pelas despesas do usuário
-  const expensesRef = collection(db, 'expenses');
-  const userQuery = query(expensesRef, where('userId', '==', user.uid));
-  unsubscribeExpenses = onSnapshot(userQuery, (snapshot) => {
+  const userQuery = db.collection('expenses').where('userId', '==', user.uid);
+  unsubscribeExpenses = userQuery.onSnapshot((snapshot) => {
     const expenses = [];
     snapshot.forEach((doc) => {
       const data = doc.data();
@@ -63,7 +65,7 @@ function startExpenseListeners(user) {
     // Calcula o total de gastos
     const total = expenses.reduce((sum, exp) => sum + (Number(exp.value) || 0), 0);
     totalSumEl.textContent = `Total gasto: R$ ${total.toFixed(2)}`;
-    // Ordena por valor decrescente e pega os três primeiros
+    // Top 3 maiores despesas
     const topThree = expenses.sort((a, b) => b.value - a.value).slice(0, 3);
     topExpensesList.innerHTML = '';
     topThree.forEach((exp) => {
@@ -74,26 +76,26 @@ function startExpenseListeners(user) {
   });
 }
 
-// Lida com submissão do formulário de cadastro
+// Cadastro de usuário
 signupForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = signupForm['signup-email'].value;
   const password = signupForm['signup-password'].value;
   try {
-    await createUserWithEmailAndPassword(auth, email, password);
+    await auth.createUserWithEmailAndPassword(email, password);
     signupForm.reset();
   } catch (error) {
     alert(`Erro ao cadastrar: ${error.message}`);
   }
 });
 
-// Lida com submissão do formulário de login
+// Login de usuário
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = loginForm['login-email'].value;
   const password = loginForm['login-password'].value;
   try {
-    await signInWithEmailAndPassword(auth, email, password);
+    await auth.signInWithEmailAndPassword(email, password);
     loginForm.reset();
   } catch (error) {
     alert(`Erro ao entrar: ${error.message}`);
@@ -103,13 +105,13 @@ loginForm.addEventListener('submit', async (e) => {
 // Botão de logout
 logoutBtn.addEventListener('click', async () => {
   try {
-    await signOut(auth);
+    await auth.signOut();
   } catch (error) {
     alert(`Erro ao sair: ${error.message}`);
   }
 });
 
-// Submissão do formulário de despesas
+// Registro de despesas
 expenseForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const value = parseFloat(valueInput.value);
@@ -127,7 +129,7 @@ expenseForm.addEventListener('submit', async (e) => {
     return;
   }
   try {
-    await addDoc(collection(db, 'expenses'), {
+    await db.collection('expenses').add({
       userId: auth.currentUser.uid,
       value: value,
       reason: reason,
@@ -140,20 +142,19 @@ expenseForm.addEventListener('submit', async (e) => {
   }
 });
 
-// Observa mudanças de estado de autenticação
-onAuthStateChanged(auth, (user) => {
+// Monitoramento do estado de autenticação
+auth.onAuthStateChanged((user) => {
   if (user) {
-    // Usuário logado: mostra seções de gastos e botões apropriados
     document.getElementById('auth-section').style.display = 'none';
     document.getElementById('expense-section').style.display = 'block';
     document.getElementById('logout-section').style.display = 'block';
     startExpenseListeners(user);
   } else {
-    // Nenhum usuário logado: esconde seções de gastos
     document.getElementById('auth-section').style.display = 'block';
     document.getElementById('expense-section').style.display = 'none';
     document.getElementById('logout-section').style.display = 'none';
-    // Cancela listeners se existirem
+    if (loginContainer) loginContainer.style.display = 'block';
+    if (signupContainer) signupContainer.style.display = 'none';
     if (unsubscribeExpenses) {
       unsubscribeExpenses();
       unsubscribeExpenses = null;
