@@ -7,9 +7,7 @@
   <title>Registro de Gastos de Viagem</title>
   <!-- Link para a folha de estilos separada -->
   <link rel="stylesheet" href="style.css">
-  <!-- Importação do script do Firebase e da lógica do app -->
-  <!-- O código JavaScript principal foi movido para o arquivo app.js para manter a separação de responsabilidades. -->
-  <script type="module" src="app.js"></script>
+  <!-- Importação do script do Firebase e da lógica do app será feita no final do body para garantir que a DOM esteja carregada -->
 </head>
 <body>
   <header>
@@ -18,33 +16,37 @@
   <main>
     <!-- Seção de autenticação (login e cadastro) -->
     <section id="auth-section">
-      <div class="auth-container">
-        <h2>Criar conta</h2>
-        <form id="signup-form">
-          <div class="form-group">
-            <label for="signup-email">E‑mail:</label>
-            <input type="email" id="signup-email" required />
-          </div>
-          <div class="form-group">
-            <label for="signup-password">Senha:</label>
-            <input type="password" id="signup-password" required />
-          </div>
-          <button type="submit">Cadastrar</button>
-        </form>
-      </div>
-      <div class="auth-container">
+      <!-- Contêiner de login (exibido por padrão) -->
+      <div id="login-container" class="auth-container">
         <h2>Entrar</h2>
         <form id="login-form">
           <div class="form-group">
             <label for="login-email">E‑mail:</label>
-            <input type="email" id="login-email" required />
+            <input type="email" id="login-email" name="login-email" required />
           </div>
           <div class="form-group">
             <label for="login-password">Senha:</label>
-            <input type="password" id="login-password" required />
+            <input type="password" id="login-password" name="login-password" required />
           </div>
           <button type="submit">Entrar</button>
         </form>
+        <p class="switch-link">Não tem conta? <button type="button" id="show-signup" class="link-button">Cadastrar</button></p>
+      </div>
+      <!-- Contêiner de cadastro (inicialmente oculto) -->
+      <div id="signup-container" class="auth-container" style="display: none;">
+        <h2>Criar conta</h2>
+        <form id="signup-form">
+          <div class="form-group">
+            <label for="signup-email">E‑mail:</label>
+            <input type="email" id="signup-email" name="signup-email" required />
+          </div>
+          <div class="form-group">
+            <label for="signup-password">Senha:</label>
+            <input type="password" id="signup-password" name="signup-password" required />
+          </div>
+          <button type="submit">Cadastrar</button>
+        </form>
+        <p class="switch-link">Já tem conta? <button type="button" id="show-login" class="link-button">Entrar</button></p>
       </div>
     </section>
     <!-- Seção de gastos (visível apenas quando usuário está logado) -->
@@ -53,11 +55,11 @@
       <form id="expense-form">
         <div class="form-group">
           <label for="value-input">Valor (R$):</label>
-          <input type="number" id="value-input" min="0" step="0.01" required />
+          <input type="number" id="value-input" name="value" min="0" step="0.01" required />
         </div>
         <div class="form-group">
           <label for="reason-input">Motivo:</label>
-          <input type="text" id="reason-input" required />
+          <input type="text" id="reason-input" name="reason" required />
         </div>
         <button type="submit">Adicionar Gasto</button>
       </form>
@@ -75,5 +77,11 @@
   <footer>
     <p>&copy; 2026 Registro de Gastos de Viagem</p>
   </footer>
+  <!-- Importa as bibliotecas Firebase (versão compatível) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <!-- Carrega o script JavaScript principal após o carregamento da página -->
+  <script src="app.js"></script>
 </body>
 </html>
