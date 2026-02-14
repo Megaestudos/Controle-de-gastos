@@ -1,125 +1,145 @@
 /* Estilos gerais para a página do app de gastos de viagem */
+/* Base e tipografia */
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Poppins', Arial, Helvetica, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: #f5f6fa;
+  color: #4a4a4a;
   line-height: 1.5;
 }
 
 header {
-  background-color: #1e88e5;
-  color: white;
-  padding: 1rem;
+  background-color: #2a7afc;
+  color: #fff;
+  padding: 1.5rem;
   text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 main {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 1rem;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  max-width: 700px;
+  margin: 3rem auto 4rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
 footer {
   text-align: center;
-  padding: 1rem;
-  background-color: #eee;
-  position: fixed;
-  bottom: 0;
-  width: 100%;
+  padding: 1.5rem;
+  background-color: transparent;
+  color: #8c8c8c;
+  font-size: 0.875rem;
 }
 
 /* Estilos para seções de autenticação e gasto */
+
+/* Containers de autenticação e seção de gastos */
 .auth-container {
   margin-bottom: 2rem;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 1.5rem;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  background-color: #fafafa;
 }
 
 h2 {
   margin-top: 0;
-  color: #1e88e5;
+  color: #2a7afc;
+  font-weight: 600;
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 label {
   display: block;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
 }
 
 input[type="email"],
 input[type="password"],
 input[type="number"],
-input[type="text"] {
+input[type="text"],
+input[type="date"] {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
   box-sizing: border-box;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="text"]:focus,
+input[type="date"]:focus {
+  border-color: #2a7afc;
+  outline: none;
 }
 
 button {
-  background-color: #1e88e5;
-  color: white;
+  background-color: #2a7afc;
+  color: #fff;
   border: none;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 button:hover {
-  background-color: #1565c0;
+  background-color: #1960d8;
 }
 
-/* Estilização para lista de top gastos */
+/* Estilização para a área de resultados */
 .results {
   margin-top: 2rem;
 }
 
-#top-expenses {
-  list-style-type: none;
-  padding-left: 0;
-}
-
-#top-expenses li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #eee;
-}
-
-#total-sum {
-  margin-top: 1rem;
-  font-weight: bold;
-}
-
-/* Lista completa de despesas */
+#top-expenses,
 #expenses-list {
   list-style-type: none;
   padding-left: 0;
 }
 
+#top-expenses li,
 #expenses-list li {
   padding: 0.5rem 0;
   border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#total-sum {
+  margin-top: 1.5rem;
+  font-weight: 600;
+  color: #333;
 }
 
 /* Botão de exclusão para cada gasto */
 .delete-button {
-  margin-left: 0.5rem;
+  margin-left: 1rem;
   color: #e53935;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.delete-button:hover {
+  color: #c62828;
 }
 
 /* Botões que se comportam como links (para alternar entre login e cadastro) */
@@ -127,8 +147,9 @@ button:hover {
   background: none;
   border: none;
   padding: 0;
-  color: #1e88e5;
+  color: #2a7afc;
   text-decoration: underline;
   cursor: pointer;
   font-size: 1rem;
+  margin: 0;
 }
