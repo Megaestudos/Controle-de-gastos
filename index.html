@@ -54,19 +54,25 @@
       <h2>Registrar gasto</h2>
       <form id="expense-form">
         <div class="form-group">
+          <label for="reason-input">Motivo:</label>
+          <input type="text" id="reason-input" name="reason" required />
+        </div>
+        <div class="form-group">
           <label for="value-input">Valor (R$):</label>
           <input type="number" id="value-input" name="value" min="0" step="0.01" required />
         </div>
         <div class="form-group">
-          <label for="reason-input">Motivo:</label>
-          <input type="text" id="reason-input" name="reason" required />
+          <label for="date-input">Data:</label>
+          <input type="date" id="date-input" name="date" required />
         </div>
-        <button type="submit">Adicionar Gasto</button>
+        <button type="submit">Gravar Gasto</button>
       </form>
       <div class="results">
-        <h3>Top 3 gastos</h3>
+        <h3>Ranking de maiores gastos</h3>
         <ul id="top-expenses"></ul>
         <h3 id="total-sum">Total gasto: R$ 0,00</h3>
+        <h3>Todas as despesas</h3>
+        <ul id="expenses-list"></ul>
       </div>
     </section>
     <!-- Seção de logout -->
