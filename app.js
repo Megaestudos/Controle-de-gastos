@@ -5,7 +5,8 @@ const firebaseConfig = {
   apiKey: 'AIzaSyC79ayeEjnYDwejYovZsdKm8Gdxdle74Zw',
   authDomain: 'controle-de-gastos-7624f.firebaseapp.com',
   projectId: 'controle-de-gastos-7624f',
-  storageBucket: 'controle-de-gastos-7624f.firebasestorage.app',
+  // Firebase Storage bucket associada ao projeto (substitua se necessário)
+  storageBucket: 'controle-de-gastos-7624f.appspot.com',
   messagingSenderId: '1054967907917',
   appId: '1:1054967907917:web:2775e66d5a8ca7d8d47e04',
 };
@@ -32,11 +33,11 @@ const loginContainer = document.getElementById('login-container');
 const signupContainer = document.getElementById('signup-container');
 const showSignupLink = document.getElementById('show-signup');
 const showLoginLink = document.getElementById('show-login');
-
-// Alternância de formulários (mostrar apenas um por vez)
+// Adiciona listeners para alternar os formulários de login e cadastro.
 if (showSignupLink) {
   showSignupLink.addEventListener('click', (e) => {
     e.preventDefault();
+    // Alterna para o formulário de cadastro
     if (loginContainer) loginContainer.style.display = 'none';
     if (signupContainer) signupContainer.style.display = 'block';
   });
@@ -44,6 +45,7 @@ if (showSignupLink) {
 if (showLoginLink) {
   showLoginLink.addEventListener('click', (e) => {
     e.preventDefault();
+    // Alterna para o formulário de login
     if (signupContainer) signupContainer.style.display = 'none';
     if (loginContainer) loginContainer.style.display = 'block';
   });
@@ -53,10 +55,12 @@ let unsubscribeExpenses = null;
 
 // Função para iniciar listeners de despesas (escuta em tempo real) para o usuário logado
 function startExpenseListeners(user) {
+  // Cancela listener anterior, se existir
   if (unsubscribeExpenses) {
     unsubscribeExpenses();
     unsubscribeExpenses = null;
   }
+  // Cria uma consulta filtrando pelas despesas do usuário
   const userQuery = db.collection('expenses').where('userId', '==', user.uid);
   unsubscribeExpenses = userQuery.onSnapshot((snapshot) => {
     const expenses = [];
@@ -79,12 +83,10 @@ function startExpenseListeners(user) {
       }
       expenses.push({ id: doc.id, ...data, dateString });
     });
-
     // Calcula o total de gastos
     const total = expenses.reduce((sum, exp) => sum + (Number(exp.value) || 0), 0);
     totalSumEl.textContent = `Total gasto: R$ ${total.toFixed(2)}`;
-
-    // Ordena uma cópia por valor decrescente e pega os três primeiros para o ranking
+    // Ordena por valor decrescente e pega os três maiores para o ranking
     const topThree = expenses.slice().sort((a, b) => b.value - a.value).slice(0, 3);
     topExpensesList.innerHTML = '';
     topThree.forEach((exp) => {
@@ -92,8 +94,7 @@ function startExpenseListeners(user) {
       li.textContent = `${exp.reason}: R$ ${Number(exp.value).toFixed(2)} - ${exp.dateString}`;
       topExpensesList.appendChild(li);
     });
-
-    // Atualiza a lista completa de despesas com botão de deletar
+    // Atualiza a lista completa de despesas com opção de deletar
     if (expensesListEl) {
       expensesListEl.innerHTML = '';
       expenses.forEach((exp) => {
@@ -120,12 +121,13 @@ function startExpenseListeners(user) {
   });
 }
 
-// Cadastro de usuário
+// Lida com submissão do formulário de cadastro
 signupForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = signupForm['signup-email'].value;
   const password = signupForm['signup-password'].value;
   try {
+    // Usa a API compatível para criar o usuário
     await auth.createUserWithEmailAndPassword(email, password);
     signupForm.reset();
   } catch (error) {
@@ -133,12 +135,13 @@ signupForm.addEventListener('submit', async (e) => {
   }
 });
 
-// Login de usuário
+// Lida com submissão do formulário de login
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = loginForm['login-email'].value;
   const password = loginForm['login-password'].value;
   try {
+    // Usa a API compatível para fazer login
     await auth.signInWithEmailAndPassword(email, password);
     loginForm.reset();
   } catch (error) {
@@ -155,7 +158,7 @@ logoutBtn.addEventListener('click', async () => {
   }
 });
 
-// Registro de despesas
+// Submissão do formulário de despesas
 expenseForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const value = parseFloat(valueInput.value);
