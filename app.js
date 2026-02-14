@@ -1,6 +1,6 @@
 // app.js: lógica do aplicativo de gastos de viagem
 
-// Configuração do Firebase (substitua pelos dados do seu projeto)
+// Configuração do Firebase (já preenchida com seu projeto)
 const firebaseConfig = {
   apiKey: 'AIzaSyC79ayeEjnYDwejYovZsdKm8Gdxdle74Zw',
   authDomain: 'controle-de-gastos-7624f.firebaseapp.com',
@@ -24,6 +24,8 @@ const valueInput = document.getElementById('value-input');
 const reasonInput = document.getElementById('reason-input');
 const totalSumEl = document.getElementById('total-sum');
 const topExpensesList = document.getElementById('top-expenses');
+const expensesListEl = document.getElementById('expenses-list');
+const dateInput = document.getElementById('date-input');
 
 // Elementos para alternar entre login e cadastro
 const loginContainer = document.getElementById('login-container');
@@ -31,7 +33,7 @@ const signupContainer = document.getElementById('signup-container');
 const showSignupLink = document.getElementById('show-signup');
 const showLoginLink = document.getElementById('show-login');
 
-// Alternância de formulários: mostra um de cada vez
+// Alternância de formulários (mostrar apenas um por vez)
 if (showSignupLink) {
   showSignupLink.addEventListener('click', (e) => {
     e.preventDefault();
@@ -49,7 +51,7 @@ if (showLoginLink) {
 
 let unsubscribeExpenses = null;
 
-// Função para iniciar listeners de despesas em tempo real para o usuário logado
+// Função para iniciar listeners de despesas (escuta em tempo real) para o usuário logado
 function startExpenseListeners(user) {
   if (unsubscribeExpenses) {
     unsubscribeExpenses();
@@ -60,19 +62,61 @@ function startExpenseListeners(user) {
     const expenses = [];
     snapshot.forEach((doc) => {
       const data = doc.data();
-      expenses.push({ id: doc.id, ...data });
+      // Converte a data do Firestore para uma string legível
+      let dateString = '';
+      if (data.date) {
+        let dateObj;
+        if (typeof data.date.toDate === 'function') {
+          dateObj = data.date.toDate();
+        } else if (data.date instanceof Date) {
+          dateObj = data.date;
+        } else {
+          dateObj = new Date(data.date);
+        }
+        if (!isNaN(dateObj)) {
+          dateString = dateObj.toLocaleDateString('pt-BR');
+        }
+      }
+      expenses.push({ id: doc.id, ...data, dateString });
     });
+
     // Calcula o total de gastos
     const total = expenses.reduce((sum, exp) => sum + (Number(exp.value) || 0), 0);
     totalSumEl.textContent = `Total gasto: R$ ${total.toFixed(2)}`;
-    // Top 3 maiores despesas
-    const topThree = expenses.sort((a, b) => b.value - a.value).slice(0, 3);
+
+    // Ordena uma cópia por valor decrescente e pega os três primeiros para o ranking
+    const topThree = expenses.slice().sort((a, b) => b.value - a.value).slice(0, 3);
     topExpensesList.innerHTML = '';
     topThree.forEach((exp) => {
       const li = document.createElement('li');
-      li.textContent = `${exp.reason}: R$ ${Number(exp.value).toFixed(2)}`;
+      li.textContent = `${exp.reason}: R$ ${Number(exp.value).toFixed(2)} - ${exp.dateString}`;
       topExpensesList.appendChild(li);
     });
+
+    // Atualiza a lista completa de despesas com botão de deletar
+    if (expensesListEl) {
+      expensesListEl.innerHTML = '';
+      expenses.forEach((exp) => {
+        const li = document.createElement('li');
+        li.textContent = `${exp.reason}: R$ ${Number(exp.value).toFixed(2)} - ${exp.dateString}`;
+        // Botão de deletar
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Deletar';
+        delBtn.className = 'delete-button';
+        delBtn.addEventListener('click', async () => {
+          const confirmDelete = confirm('Tem certeza que deseja excluir este gasto?');
+          if (confirmDelete) {
+            try {
+              await db.collection('expenses').doc(exp.id).delete();
+            } catch (err) {
+              alert(`Erro ao deletar gasto: ${err.message}`);
+            }
+          }
+        });
+        li.appendChild(delBtn);
+        expensesListEl.appendChild(li);
+      });
+    }
   });
 }
 
@@ -129,32 +173,42 @@ expenseForm.addEventListener('submit', async (e) => {
     return;
   }
   try {
+    // Captura a data; se não informada, usa a data atual
+    const dateValue = dateInput.value;
+    const dateObj = dateValue ? new Date(dateValue) : new Date();
     await db.collection('expenses').add({
       userId: auth.currentUser.uid,
       value: value,
       reason: reason,
+      date: dateObj,
       timestamp: Date.now(),
     });
+    // Limpa os campos
     valueInput.value = '';
     reasonInput.value = '';
+    dateInput.value = '';
   } catch (error) {
     alert(`Erro ao registrar gasto: ${error.message}`);
   }
 });
 
-// Monitoramento do estado de autenticação
+// Observa mudanças de estado de autenticação
 auth.onAuthStateChanged((user) => {
   if (user) {
+    // Usuário logado: mostra seções de gastos e botões apropriados
     document.getElementById('auth-section').style.display = 'none';
     document.getElementById('expense-section').style.display = 'block';
     document.getElementById('logout-section').style.display = 'block';
     startExpenseListeners(user);
   } else {
+    // Nenhum usuário logado: esconde seções de gastos
     document.getElementById('auth-section').style.display = 'block';
     document.getElementById('expense-section').style.display = 'none';
     document.getElementById('logout-section').style.display = 'none';
+    // Sempre volta para a tela de login por padrão
     if (loginContainer) loginContainer.style.display = 'block';
     if (signupContainer) signupContainer.style.display = 'none';
+    // Cancela listeners se existirem
     if (unsubscribeExpenses) {
       unsubscribeExpenses();
       unsubscribeExpenses = null;
