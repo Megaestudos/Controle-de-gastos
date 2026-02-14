@@ -5,7 +5,6 @@ const firebaseConfig = {
   apiKey: 'AIzaSyC79ayeEjnYDwejYovZsdKm8Gdxdle74Zw',
   authDomain: 'controle-de-gastos-7624f.firebaseapp.com',
   projectId: 'controle-de-gastos-7624f',
-  // Firebase Storage bucket associada ao projeto (substitua se necessário)
   storageBucket: 'controle-de-gastos-7624f.appspot.com',
   messagingSenderId: '1054967907917',
   appId: '1:1054967907917:web:2775e66d5a8ca7d8d47e04',
@@ -15,6 +14,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+// Define a persistência de autenticação para NONE. Assim, o login é mantido
+// apenas enquanto a aba estiver aberta; ao recarregar ou fechar, é necessário entrar de novo.
+auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch((error) => {
+  console.error('Erro ao definir persistência de autenticação:', error);
+});
 
 // Seleciona elementos do DOM
 const signupForm = document.getElementById('signup-form');
@@ -33,7 +38,7 @@ const loginContainer = document.getElementById('login-container');
 const signupContainer = document.getElementById('signup-container');
 const showSignupLink = document.getElementById('show-signup');
 const showLoginLink = document.getElementById('show-login');
-// Adiciona listeners para alternar os formulários
+// Adiciona listeners para alternar os formulários de login e cadastro.
 if (showSignupLink) {
   showSignupLink.addEventListener('click', (e) => {
     e.preventDefault();
@@ -53,15 +58,19 @@ let unsubscribeExpenses = null;
 
 // Função para iniciar listeners de despesas (escuta em tempo real) para o usuário logado
 function startExpenseListeners(user) {
+  // Cancela listener anterior, se existir
   if (unsubscribeExpenses) {
     unsubscribeExpenses();
     unsubscribeExpenses = null;
   }
-  const userQuery = db.collection('expenses').where('userId', '==', user.uid);
-  unsubscribeExpenses = userQuery.onSnapshot((snapshot) => {
+  // Escuta as despesas do usuário na subcoleção "expenses" dentro de "users/{uid}"
+  const uid = user.uid;
+  const userExpensesRef = db.collection('users').doc(uid).collection('expenses');
+  unsubscribeExpenses = userExpensesRef.onSnapshot((snapshot) => {
     const expenses = [];
     snapshot.forEach((doc) => {
       const data = doc.data();
+      // Converte a data do Firestore para uma string legível
       let dateString = '';
       if (data.date) {
         let dateObj;
@@ -81,8 +90,7 @@ function startExpenseListeners(user) {
     // Calcula o total de gastos
     const total = expenses.reduce((sum, exp) => sum + (Number(exp.value) || 0), 0);
     totalSumEl.textContent = `Total gasto: R$ ${total.toFixed(2)}`;
-
-    // Ranking: top 3 maiores gastos
+    // Ordena por valor decrescente e pega os três maiores para o ranking
     const topThree = expenses.slice().sort((a, b) => b.value - a.value).slice(0, 3);
     topExpensesList.innerHTML = '';
     topThree.forEach((exp) => {
@@ -90,20 +98,21 @@ function startExpenseListeners(user) {
       li.textContent = `${exp.reason}: R$ ${Number(exp.value).toFixed(2)} - ${exp.dateString}`;
       topExpensesList.appendChild(li);
     });
-
-    // Lista completa com botão de deletar
+    // Atualiza a lista completa de despesas com opção de deletar
     if (expensesListEl) {
       expensesListEl.innerHTML = '';
       expenses.forEach((exp) => {
         const li = document.createElement('li');
         li.textContent = `${exp.reason}: R$ ${Number(exp.value).toFixed(2)} - ${exp.dateString}`;
+        // Botão de deletar
         const delBtn = document.createElement('button');
         delBtn.textContent = 'Deletar';
         delBtn.className = 'delete-button';
         delBtn.addEventListener('click', async () => {
           if (confirm('Tem certeza que deseja excluir este gasto?')) {
             try {
-              await db.collection('expenses').doc(exp.id).delete();
+              // Remove o documento na subcoleção do usuário
+              await db.collection('users').doc(uid).collection('expenses').doc(exp.id).delete();
             } catch (err) {
               alert(`Erro ao deletar gasto: ${err.message}`);
             }
@@ -122,6 +131,7 @@ signupForm.addEventListener('submit', async (e) => {
   const email = signupForm['signup-email'].value;
   const password = signupForm['signup-password'].value;
   try {
+    // Usa a API compatível para criar o usuário
     await auth.createUserWithEmailAndPassword(email, password);
     signupForm.reset();
   } catch (error) {
@@ -135,6 +145,7 @@ loginForm.addEventListener('submit', async (e) => {
   const email = loginForm['login-email'].value;
   const password = loginForm['login-password'].value;
   try {
+    // Usa a API compatível para fazer login
     await auth.signInWithEmailAndPassword(email, password);
     loginForm.reset();
   } catch (error) {
@@ -145,13 +156,14 @@ loginForm.addEventListener('submit', async (e) => {
 // Botão de logout
 logoutBtn.addEventListener('click', async () => {
   try {
+    // Usa a API compatível para sair
     await auth.signOut();
   } catch (error) {
     alert(`Erro ao sair: ${error.message}`);
   }
 });
 
-// Registro de despesas
+// Submissão do formulário de despesas
 expenseForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const value = parseFloat(valueInput.value);
@@ -169,10 +181,11 @@ expenseForm.addEventListener('submit', async (e) => {
     return;
   }
   try {
+    // Captura a data; se não informada, usa a data atual
     const dateValue = dateInput.value;
     const dateObj = dateValue ? new Date(dateValue) : new Date();
-    await db.collection('expenses').add({
-      userId: auth.currentUser.uid,
+    // Armazena o gasto na subcoleção "expenses" do documento do usuário.
+    await db.collection('users').doc(auth.currentUser.uid).collection('expenses').add({
       value: value,
       reason: reason,
       date: dateObj,
@@ -188,16 +201,20 @@ expenseForm.addEventListener('submit', async (e) => {
 // Observa mudanças de estado de autenticação
 auth.onAuthStateChanged((user) => {
   if (user) {
+    // Usuário logado: mostra seções de gastos e botões apropriados
     document.getElementById('auth-section').style.display = 'none';
     document.getElementById('expense-section').style.display = 'block';
     document.getElementById('logout-section').style.display = 'block';
     startExpenseListeners(user);
   } else {
+    // Nenhum usuário logado: esconde seções de gastos
     document.getElementById('auth-section').style.display = 'block';
     document.getElementById('expense-section').style.display = 'none';
     document.getElementById('logout-section').style.display = 'none';
+    // Sempre volta para a tela de login por padrão
     if (loginContainer) loginContainer.style.display = 'block';
     if (signupContainer) signupContainer.style.display = 'none';
+    // Cancela listeners se existirem
     if (unsubscribeExpenses) {
       unsubscribeExpenses();
       unsubscribeExpenses = null;
